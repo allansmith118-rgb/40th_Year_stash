@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Rugby Club Kit Order Form</title>
+  <style>
+    body { font-family: Arial; max-width: 700px; margin: 40px auto; }
+    label { display: block; margin-top: 10px; }
+    input, select, button { padding: 8px; margin-top: 4px; }
+    .item-row { border: 1px solid #ddd; padding: 10px; margin-top: 10px; border-radius: 5px; }
+    button { background-color: #0073e6; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #005bb5; }
+  </style>
+</head>
+<body>
+  <h2>Rugby Club Kit Order Form</h2>
+
+  <form id="orderForm">
+    <label>Name</label>
+    <input type="text" name="name" required>
+
+    <label>Email</label>
+    <input type="email" name="email" required>
+
+    <h3>Items</h3>
+    <div id="itemsContainer">
+      <div class="item-row">
+        <label>Item</label>
+        <select name="item" required>
+          <option value="">-- Select an item --</option>
+          <option value="Polo Shirt (£15)">Polo Shirt (£15)</option>
+          <option value="Long Sleeve Blue Shirt (£25)">Long Sleeve Blue Shirt (£25)</option>
+          <option value="Short Sleeve Blue Shirt (£25)">Short Sleeve Blue Shirt (£25)</option>
+          <option value="1/4 Zip Midlayer (£50)">1/4 Zip Midlayer (£50)</option>
+        </select>
+
+        <label>Size</label>
+        <select name="size" required>
+          <option value="">-- Select size --</option>
+          <option>Medium</option><option>Large</option><option>XL</option>
+          <option>2XL</option><option>3XL</option><option>4XL</option><option>5XL</option>
+          <option>14.5</option><option>15</option><option>15.5</option><option>16</option>
+          <option>16.5</option><option>17</option><option>17.5</option><option>18</option>
+          <option>18.5</option><option>19</option><option>20</option><option>21</option><option>22</option>
+        </select>
+
+        <label>Quantity</label>
+        <input type="number" name="quantity" min="1" value="1" required>
+      </div>
+    </div>
+
+    <button type="button" onclick="addItem()">➕ Add another item</button><br><br>
+    <button type="submit">Submit Order</button>
+  </form>
+
+  <p id="responseMessage"></p>
+
+  <script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbw2FQ_f5g5aWh9rFKPCelbu_cSRUumkJw31HjRKNndt9rNcRc5nulRNVuefedWrbG_L0Q/exec';
+    const form = document.getElementById('orderForm');
+    const container = document.getElementById('itemsContainer');
+
+    function addItem() {
+      const clone = container.firstElementChild.cloneNode(true);
+      clone.querySelectorAll('input, select').forEach(el => el.value = '');
+      container.appendChild(clone);
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+
+      const items = Array.from(container.querySelectorAll('.item-row')).map(row => {
+        const item = row.querySelector('select[name="item"]').value;
+        const size = row.querySelector('select[name="size"]').value;
+        const qty = row.querySelector('input[name="quantity"]').value;
+        return `${item} (Size: ${size}, Qty: ${qty})`;
+      }).join('; ');
+
+      const formData = new FormData();
+      formData.append('name', form.name.value);
+      formData.append('email', form.email.value);
+      formData.append('items', items);
+
+      fetch(scriptURL, { method: 'POST', body: formData })
+        .then(response => document.getElementById('responseMessage').innerHTML = "✅ Order submitted successfully!")
+        .catch(error => document.getElementById('responseMessage').innerHTML = "❌ Error submitting order.");
+
+      form.reset();
+      while (container.children.length > 1) container.removeChild(container.lastChild);
+    });
+  </script>
+</body>
+</html>
